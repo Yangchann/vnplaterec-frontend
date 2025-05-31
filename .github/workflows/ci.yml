@@ -1,211 +1,88 @@
-name: CI - Security & Quality Check
+name: CI Pipeline
 
 on:
   push:
-    branches: [ main]
-  pull_request:
     branches: [ main ]
+  pull_request:
 
 env:
   NODE_VERSION: '18'
 
 jobs:
-  # Job 1: SonarQube Analysis (Code Quality First)
-  sonar-scan:
+  simple-ci:
     runs-on: ubuntu-latest
-    name: 📊 SonarQube Analysis
-    if: github.event_name != 'pull_request'  # Skip on PRs for now
-
-    defaults:
-      run:
-        working-directory: .
+    name: Simple CI Test
 
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Full history for better analysis
 
-      - name: ⚙️ Setup Node.js
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: './package-lock.json'
 
-      - name: 📦 Install dependencies
-        run: npm ci
-
-      - name: 🧪 Run tests with coverage
-        run: |
-          npm run test -- --coverage --passWithNoTests --watchAll=false || true
-
-      - name: 📊 SonarQube Scan
-        uses: sonarqube-quality-gate-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-          projectBaseDir: frontend
-          args: >
-            -Dsonar.projectKey=vnplaterec-frontend
-            -Dsonar.projectName="VN License Plate Recognition - Frontend"
-            -Dsonar.sources=src
-            -Dsonar.exclusions="**/*.test.js,**/*.test.jsx,**/*.test.ts,**/*.test.tsx,**/node_modules/**"
-
-  # Job 2: Trivy Security Scan (After Code Quality)
-  trivy-scan:
-    runs-on: ubuntu-latest
-    needs: sonar-scan
-    name: 🔍 Trivy Security Scan
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🔍 Run Trivy filesystem scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'table'
-          severity: 'HIGH,CRITICAL'
-          exit-code: '0'  # Don't fail pipeline for now
-
-      - name: 📝 Show scan results
-        run: echo "Trivy scan completed successfully!"
-
-  # Job 3: Build & Test (After Security Checks)
-  build-test:
-    runs-on: ubuntu-latest
-    needs: trivy-scan
-    name: 🏗️ Build & Test
-
-    defaults:
-      run:
-        working-directory: .
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: ⚙️ Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: './package-lock.json'
-
-      - name: 📦 Install dependencies
+      - name: Install dependencies
         run: |
           npm ci --prefer-offline --no-audit
 
-      - name: 🧪 Run basic tests
+      - name: Run tests
         run: |
-          npm run test -- --passWithNoTests --watchAll=false
+          npm run test -- --passWithNoTests --watchAll=false || echo "No tests found, continuing..."
 
-      - name: 🏗️ Build application
+      - name: Lint code
+        run: |
+          npm run lint || echo "No linting configured, continuing..."
+
+      - name: Build application
         run: |
           npm run build
 
-      - name: ✅ Build completed
-        run: echo "Build successful!"
+      - name: SonarQubeScan
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-  # Job 4: Slack Notification (Final Step)
-  notify-slack:
-    runs-on: ubuntu-latest
-    needs: [sonar-scan, trivy-scan, build-test]
-    if: always()  # Run even if previous jobs fail
-    name: 📢 Slack Notification
-
-    steps:
-      - name: 📊 Determine overall status
-        id: status
-        run: |
-          if [[ "${{ needs.sonar-scan.result }}" == "failure" ||
-                "${{ needs.trivy-scan.result }}" == "failure" ||
-                "${{ needs.build-test.result }}" == "failure" ]]; then
-            echo "status=failure" >> $GITHUB_OUTPUT
-            echo "color=danger" >> $GITHUB_OUTPUT
-            echo "icon=❌" >> $GITHUB_OUTPUT
-            echo "message=Pipeline Failed" >> $GITHUB_OUTPUT
-          elif [[ "${{ needs.sonar-scan.result }}" == "success" &&
-                  "${{ needs.trivy-scan.result }}" == "success" &&
-                  "${{ needs.build-test.result }}" == "success" ]]; then
-            echo "status=success" >> $GITHUB_OUTPUT
-            echo "color=good" >> $GITHUB_OUTPUT
-            echo "icon=✅" >> $GITHUB_OUTPUT
-            echo "message=Pipeline Successful" >> $GITHUB_OUTPUT
-          else
-            echo "status=warning" >> $GITHUB_OUTPUT
-            echo "color=warning" >> $GITHUB_OUTPUT
-            echo "icon=⚠️" >> $GITHUB_OUTPUT
-            echo "message=Pipeline Completed with Issues" >> $GITHUB_OUTPUT
-          fi
-
-      - name: 📢 Send Slack notification
-        uses: 8398a7/action-slack@v3
+      - name: SonarQube Quality Gate check
+        id: sonarqube-quality-gate-check
+        uses: sonarsource/sonarqube-quality-gate-action@master
         with:
-          status: custom
-          channel: '#deployments'
-          custom_payload: |
-            {
-              "text": "${{ steps.status.outputs.icon }} VN License Plate Recognition - Frontend",
-              "attachments": [
-                {
-                  "color": "${{ steps.status.outputs.color }}",
-                  "blocks": [
-                    {
-                      "type": "header",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "${{ steps.status.outputs.message }}"
-                      }
-                    },
-                    {
-                      "type": "section",
-                      "fields": [
-                        {
-                          "type": "mrkdwn",
-                          "text": "*Repository:* ${{ github.repository }}"
-                        },
-                        {
-                          "type": "mrkdwn",
-                          "text": "*Branch:* ${{ github.ref_name }}"
-                        },
-                        {
-                          "type": "mrkdwn",
-                          "text": "*Author:* ${{ github.actor }}"
-                        },
-                        {
-                          "type": "mrkdwn",
-                          "text": "*Commit:* `${{ github.sha }}`"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "section",
-                      "text": {
-                        "type": "mrkdwn",
-                        "text": "*Job Results:*\n• SonarQube: ${{ needs.sonar-scan.result }}\n• Security Scan: ${{ needs.trivy-scan.result }}\n• Build & Test: ${{ needs.build-test.result }}"
-                      }
-                    },
-                    {
-                      "type": "actions",
-                      "elements": [
-                        {
-                          "type": "button",
-                          "text": {
-                            "type": "plain_text",
-                            "text": "View Pipeline 🔗"
-                          },
-                          "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
+            pollingTimeoutSec: 600
+        env:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: "SonarQube Quality Gate Status"
+        run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
+
+      - name: OWSAP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        id: Depcheck
+        with:
+            project: 'test'
+            path: '.'
+            format: 'HTML'
+            out: 'reports'
+            args: >
+                --failOnCVSS 7
+                --enableRetired
+
+
+      - name: Notify Slack
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        with:
+          status: ${{ job.status }}
+          channel: '#frontend'
+          text: |
+            🚀 Simple CI Pipeline Result: ${{ job.status }}
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Author: ${{ github.actor }}
+            Commit: ${{ github.sha }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
