@@ -46,6 +46,11 @@ jobs:
         env:
             SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
             SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+            args: >
+              -Dsonar.projectKey=Yangchann_vnplaterec-frontend
+              -Dsonar.organization=giangtran
+
 
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
