@@ -46,6 +46,13 @@ jobs:
         env:
             SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
             SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=vnplaterec-frontend
+            -Dsonar.projectName="VN License Plate Recognition - Frontend"
+            -Dsonar.organization=yangchann
+            -Dsonar.sources=src
+            -Dsonar.exclusions="**/node_modules/**,**/.next/**,**/public/**"
 
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
@@ -59,30 +66,29 @@ jobs:
       - name: "SonarQube Quality Gate Status"
         run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
 
-      - name: OWSAP Dependency Check
-        uses: dependency-check/Dependency-Check_Action@main
-        id: Depcheck
+      - name: Run Trivy vulnerability scanner in fs mode
+        uses: aquasecurity/trivy-action@0.28.0
         with:
-            project: 'test'
-            path: '.'
-            format: 'HTML'
-            out: 'reports'
-            args: >
-                --failOnCVSS 7
-                --enableRetired
+            scan-type: 'fs'
+            scan-ref: '.'
+
+
+    #   - name: Build an image from Dockerfile
+    #     run: docker build -t docker.io/my-organization/my-app:${{ github.sha }} .
+
+    #   - name: Run Trivy vulnerability scanner
+    #     uses: aquasecurity/trivy-action@0.28.0
+    #     with:
+    #       image-ref: 'docker.io/my-organization/my-app:${{ github.sha }}'
+    #       format: 'table'
+    #       exit-code: '1'
+    #       ignore-unfixed: true
+    #       vuln-type: 'os,library'
+    #       severity: 'CRITICAL,HIGH'
 
 
       - name: Notify Slack
         if: always()
         uses: rtCamp/action-slack-notify@v2
-        with:
-          status: ${{ job.status }}
-          channel: '#frontend'
-          text: |
-            🚀 Simple CI Pipeline Result: ${{ job.status }}
-            Repository: ${{ github.repository }}
-            Branch: ${{ github.ref_name }}
-            Author: ${{ github.actor }}
-            Commit: ${{ github.sha }}
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
