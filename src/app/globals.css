@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+
+:root {
+  --background: #F8FAFC;
+  --foreground: #20293A;
+  --gray: #6c727f;
+  --darkblue: #1a78ae;
+  --blue: #7FBFE5;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Roboto", sans-serif;
+}
+
+.title {
+  color: var(--foreground);
+  font-weight: bold;
+}
+.subtitle {
+  color: var(--gray);
+  font-weight: normal;
+}
+
+.icon {
+  color: var(--blue);
+}
+
+.animated-line {
+  position: absolute;
+  left: -150px;
+  bottom: 0;
+  animation: moveRight 20s linear infinite;
+}
+
+@keyframes moveRight {
+  0% {
+    left: -150px;
+  }
+  100% {
+    left: 100%;
+  }
+}

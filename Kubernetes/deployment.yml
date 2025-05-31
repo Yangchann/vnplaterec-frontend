@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vnplaterec-frontend
+  labels:
+    app: vnplaterec-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: vnplaterec-frontend
+  template:
+    metadata:
+      labels:
+        app: vnplaterec-frontend
+    spec:
+      containers:
+      - name: vnplaterec-frontend
+        image: cnmeow/vnplaterec_frontend:latest
+        ports:
+        - containerPort: 2106
