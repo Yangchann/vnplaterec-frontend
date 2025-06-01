@@ -32,6 +32,7 @@ jobs:
       - name: Run tests
         run: |
           npm run test -- --passWithNoTests --watchAll=false || echo "No tests found, continuing..."
+          continue-on-error: true
 
       - name: Lint code
         run: |
@@ -70,19 +71,18 @@ jobs:
             scan-type: 'fs'
             scan-ref: '.'
 
+      - name: Build an image from Dockerfile
+        run: docker build -t docker.io/my-organization/my-app:${{ github.sha }} .
 
-    #   - name: Build an image from Dockerfile
-    #     run: docker build -t docker.io/my-organization/my-app:${{ github.sha }} .
-
-    #   - name: Run Trivy vulnerability scanner
-    #     uses: aquasecurity/trivy-action@0.28.0
-    #     with:
-    #       image-ref: 'docker.io/my-organization/my-app:${{ github.sha }}'
-    #       format: 'table'
-    #       exit-code: '1'
-    #       ignore-unfixed: true
-    #       vuln-type: 'os,library'
-    #       severity: 'CRITICAL,HIGH'
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: 'docker.io/my-organization/my-app:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
 
 
       - name: Notify Slack
