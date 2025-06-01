@@ -26,12 +26,18 @@ RUN addgroup --gid 1001 --system nodejs && \
     adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/.next ./next
+COPY --from=builder /app/package.json ./package.json
+
+RUN npm ci --only=production && npm cache clean --force
+
+# Set correct ownership AFTER copying (safer approach)
+RUN chown -R nextjs:nodejs /app && \
+    chmod -R 755 /app && \
+    chmod -R 644 /app/.next
 
 USER nextjs
 
 EXPOSE 3000
 
-# CMD ["npm", "start"]
-CMD ["node", "server.js"]
+CMD ["npm", "start"]
