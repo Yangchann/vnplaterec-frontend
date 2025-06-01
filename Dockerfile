@@ -7,7 +7,7 @@ ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 COPY package*.json ./
-RUN npm install
+RUN npm ci --omit=dev
 
 COPY . .
 
