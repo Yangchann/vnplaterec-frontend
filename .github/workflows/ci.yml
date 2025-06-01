@@ -32,7 +32,6 @@ jobs:
       - name: Run tests
         run: |
           npm run test -- --passWithNoTests --watchAll=false || echo "No tests found, continuing..."
-          continue-on-error: true
 
       - name: Lint code
         run: |
