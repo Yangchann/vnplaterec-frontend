@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: vnplaterec-frontend
-        image: giangttc/vnplaterec-frontend:v20250601-b20421b
+        image: giangttc/vnplaterec-frontend:v20250601-63d03f1
         ports:
         - containerPort: 3000
           name: http
