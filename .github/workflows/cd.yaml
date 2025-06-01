@@ -1,10 +1,10 @@
 name: CD Pipeline to EKS
 
 on:
-  # workflow_run:
-  #   workflows: ["CI Pipeline"]
-  #   types:
-  #     - completed
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
   push:
     branches: [ main ]
     paths:
@@ -21,8 +21,8 @@ env:
   APP_NAME: vnplaterec-frontend
 
 jobs:
-  Buil-and-Deploy:
-    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  Build-and-Deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -55,6 +55,7 @@ jobs:
       with:
         context: .
         push: true
+        platforms: linux/amd64,linux/arm64 # Multi-platform support
         tags: |
           ${{ env.DOCKER_IMAGE }}:${{ steps.tag.outputs.IMAGE_TAG }}
           ${{ env.DOCKER_IMAGE }}:latest
@@ -62,6 +63,7 @@ jobs:
         cache-to: type=gha,mode=max
         build-args: |
           NODE_ENV=production
+          NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL || 'https://localhost:8081' }}
 
     - name: Update Kubernetes manifests
       run: |
