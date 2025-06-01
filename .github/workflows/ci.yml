@@ -6,7 +6,7 @@ on:
   pull_request:
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '23'
 
 jobs:
   simple-ci:
@@ -76,12 +76,12 @@ jobs:
             severity: 'CRITICAL,HIGH'
 
       - name: Build an image from Dockerfile
-        run: docker build --no-cache -t docker.io/my-organization/my-app:${{ github.sha }} .
+        run: docker build -t giangttc/frontend:latest .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: 'docker.io/my-organization/my-app:${{ github.sha }}'
+          image-ref: 'giangttc/frontend:latest'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
