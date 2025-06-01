@@ -4,6 +4,9 @@ metadata:
   name: vnplaterec-frontend
   labels:
     app: vnplaterec-frontend
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
 spec:
   replicas: 2
   selector:
@@ -16,7 +19,35 @@ spec:
     spec:
       containers:
       - name: vnplaterec-frontend
-        image: giangttc/vnplaterec_frontend:latest
+        image: giangttc/vnplaterec-frontend:latest
         ports:
-        - containerPort: 2106
+        - containerPort: 3000
           name: http
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+
+        # Add resources limits and requests
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+        # Add health checks
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5

@@ -4,12 +4,15 @@ metadata:
   name: vnplaterec-frontend-service
   labels:
     app: vnplaterec-frontend
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
 spec:
   type: NodePort
   ports:
   - name: http
     port: 80
-    targetPort: 2106
+    targetPort: 3000
     nodePort: 30007
     protocol: TCP
   selector:

@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: node-exporter
   # namespace: prometheus-node-exporter
+  namespace: argocd
 spec:
   selector:
       app: node-exporter
