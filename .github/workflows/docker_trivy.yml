@@ -10,11 +10,9 @@ on:
     secrets:
       DOCKER_TOKEN:
         required: true
-        type: string
         description: 'DockerHub token'
       DOCKERHUB_USERNAME:
         required: true
-        type: string
         description: 'DockerHub username'
 
 jobs:
