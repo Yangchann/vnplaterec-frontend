@@ -39,6 +39,7 @@ jobs:
     secrets:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      BACKEND_URL: ${{ secrets.BACKEND_URL }}
     permissions:
       contents: read
       security-events: write

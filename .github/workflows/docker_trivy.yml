@@ -14,6 +14,9 @@ on:
       DOCKERHUB_USERNAME:
         required: true
         description: 'DockerHub username'
+      BACKEND_URL:
+        required: true
+        description: 'Backend URL for the application'
 
 jobs:
   dockertrivy:
@@ -38,6 +41,7 @@ jobs:
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
+      
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v6
@@ -46,7 +50,8 @@ jobs:
         push: true
         tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ inputs.TIMESTAMP }}
-
+        build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.BACKEND_URL }}
 
         # cache-from: type=gha
         # cache-to: type=gha,mode=max
