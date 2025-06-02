@@ -44,7 +44,7 @@ jobs:
       security-events: write
 
   update-values:
-    name: Update Helm Chart Values
+    name: Update values in Helm Chart Repo
     needs: [set-timestamp, docker-trivy]
     runs-on: ubuntu-latest
     if: ${{ !contains(needs.*.result, 'failure') }}
@@ -56,7 +56,13 @@ jobs:
           repository: cnmeow/vnplaterec-helmchart
           token: ${{ secrets.CN_GITHUB_TOKEN }}
           path: helm-chart
+
       - name: Update values.yaml
+        run: |
+          cd helm-chart/charts/frontend
+          yq e -i ".image.tag = \"${{ needs.set-timestamp.outputs.TIMESTAMP }}\"" values.yaml
+
+      - name: Commit and push changes
         run: |
           cd helm-chart
           git config user.name "Yangchann"
