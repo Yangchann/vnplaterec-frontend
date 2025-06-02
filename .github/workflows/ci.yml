@@ -55,16 +55,16 @@ jobs:
         with:
           repository: cnmeow/vnplaterec-helmchart
           token: ${{ secrets.CN_GITHUB_TOKEN }}
-          path: services
+          path: helm-chart
 
       - name: Update values.yaml
         run: |
-          cd services/frontend/helm
+          cd helm-chart/services/frontend/helm
           yq e -i ".image.tag = \"${{ needs.set-timestamp.outputs.TIMESTAMP }}\"" values.yaml
 
       - name: Commit and push changes
         run: |
-          cd services
+          cd helm-chart
           git config user.email "22520361@gm.uit.edu.vn"
           git add .
           git commit -m "ci: update image tag to ${{ needs.set-timestamp.outputs.TIMESTAMP }}"
