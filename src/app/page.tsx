@@ -8,7 +8,7 @@ import { uploadImage, PredictResponse } from '@/services/uploadService';
 import ResultDiv from '@/components/ResultDiv';
 
 export default function Home() {
-  const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL
+  const BACKEND = process.env.NEXT_PUBLIC_API_URL
   const { userUUID } = useUserUUID();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);

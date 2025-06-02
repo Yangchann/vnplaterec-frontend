@@ -6,7 +6,7 @@ import { useUserUUID } from '@/context/UserUUIDContext';
 import ResultDiv from '@/components/ResultDiv';
 
 export default function Camera() {
-  const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const BACKEND = process.env.NEXT_PUBLIC_API_URL;
   const { userUUID } = useUserUUID();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
