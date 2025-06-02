@@ -3,9 +3,6 @@ FROM node:23-alpine AS builder
 
 WORKDIR /app
 
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-
 COPY package*.json ./
 RUN npm ci
 
@@ -25,14 +22,17 @@ ENV PORT=3000
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
 
-
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/static ./.next/static
+
+# Copy script entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 RUN chown -R nextjs:nodejs /app
 USER nextjs
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+ENTRYPOINT ["/entrypoint.sh"]
