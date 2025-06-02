@@ -27,6 +27,7 @@ jobs:
 
   analysis:
     uses: ./.github/workflows/source_analysis.yml
+    needs: test
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     permissions:
@@ -34,6 +35,7 @@ jobs:
 
   docker-trivy:
     uses: ./.github/workflows/docker_trivy.yml
+    needs: [set-timestamp, test, analysis]
     with:
       TIMESTAMP: ${{ needs.set-timestamp.outputs.TIMESTAMP }}
     secrets:
