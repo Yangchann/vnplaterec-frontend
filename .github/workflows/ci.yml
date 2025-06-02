@@ -59,12 +59,12 @@ jobs:
 
       - name: Update values.yaml
         run: |
-          cd helm-chart/charts/frontend
+          cd services/frontend/helm
           yq e -i ".image.tag = \"${{ needs.set-timestamp.outputs.TIMESTAMP }}\"" values.yaml
 
       - name: Commit and push changes
         run: |
-          cd helm-chart
+          cd services/frontend/helm
           git config user.name "Yangchann"
           git config user.email "22520361@gm.uit.edu.vn"
           git add .
