@@ -7,7 +7,7 @@ export const uploadImage = async (file: File, userId: string): Promise<PredictRe
   formData.append('image', file);
   formData.append('id_user', userId);
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/predict`, {
+  const response = await fetch(`http://10.100.247.158:2106/predict`, {
     method: 'POST',
     body: formData,
   });

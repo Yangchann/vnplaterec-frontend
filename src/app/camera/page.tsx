@@ -68,7 +68,7 @@ export default function Camera() {
     if (result) {
       const timestamp = new Date().getTime();
       const platetext = result?.plate_text ? result?.plate_text : "unknown";
-      setResultImg(process.env.NEXT_PUBLIC_API_URL + '/images/' + result?.result_path + '?t=' + timestamp);
+      setResultImg('http://10.100.247.158:2106/images/' + result?.result_path + '?t=' + timestamp);
       setPlateText(platetext === "unknown" ? "Please try again" : platetext);
     }
   }, [result]);
