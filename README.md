@@ -1,4 +1,4 @@
-# 🚗 Vietnam License Plate Recognition - Frontend
+# 🚗 Vietnam License Plate Recognition - Frontend 
 
 This is the frontend of a License Plate Recognition (LPR) system, built with **Next.js** using **React** and **TypeScript**.  
 It provides a clean, user-friendly interface for uploading images or accessing a live camera stream to detect vehicle license plates in real-time.
