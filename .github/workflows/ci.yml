@@ -13,12 +13,10 @@ jobs:
   set-timestamp:
     runs-on: ubuntu-latest
     outputs:
-      TIMESTAMP: ${{ steps.set_timestamp.outputs.TIMESTAMP }}
-    name: Set Timestamp
+      TIMESTAMP: ${{ steps.set-timestamp.outputs.TIMESTAMP }}
     steps:
-      - id: set_timestamp
-        name: Set current timestamp
-        run: echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+      - id: set-timestamp
+        run: echo "TIMESTAMP=$(date +%s)" >> $GITHUB_OUTPUT
 
   test:
     uses: ./.github/workflows/test.yml
