@@ -37,7 +37,7 @@ jobs:
     with:
       TIMESTAMP: ${{ needs.set-timestamp.outputs.TIMESTAMP }}
     secrets:
-      DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
     permissions:
       contents: read
