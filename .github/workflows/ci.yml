@@ -65,6 +65,7 @@ jobs:
       - name: Commit and push changes
         run: |
           cd helm-chart
+          git config user.name "Yangchann"
           git config user.email "22520361@gm.uit.edu.vn"
           git add .
           git commit -m "ci: update image tag to ${{ needs.set-timestamp.outputs.TIMESTAMP }}"
