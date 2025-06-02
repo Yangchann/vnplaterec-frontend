@@ -4,7 +4,7 @@ This is the frontend of a License Plate Recognition (LPR) system, built with **N
 It provides a clean, user-friendly interface for uploading images or accessing a live camera stream to detect vehicle license plates in real-time.
 
 👉 **Backend repository:** [github.com/cnmeow/vnplaterec-backend](https://github.com/cnmeow/vnplaterec-backend)
-
+ 
 ## 🔧 Technologies Used   
  
 - ⚛️ Next.js – React framework for building modern web applications
