@@ -45,7 +45,7 @@ jobs:
 
   update-values:
     name: Update Helm Chart Values
-    need: [set-timestamp, docker_trivy]
+    needs: [set-timestamp, docker_trivy]
     runs-on: ubuntu-latest
     if: ${{ !contains(needs.*.result, 'failure') }}
 
