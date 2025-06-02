@@ -42,7 +42,7 @@ jobs:
         context: .
         push: true
         tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/vnplaterec-frontend:${{ inputs.TIMESTAMP }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ inputs.TIMESTAMP }}
 
 
         # cache-from: type=gha
