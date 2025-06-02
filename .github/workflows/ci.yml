@@ -33,7 +33,7 @@ jobs:
     permissions:
       security-events: write
 
-  docker_trivy:
+  docker-trivy:
     uses: ./.github/workflows/docker_trivy.yml
     with:
       TIMESTAMP: ${{ needs.set-timestamp.outputs.TIMESTAMP }}
@@ -45,7 +45,7 @@ jobs:
 
   update-values:
     name: Update Helm Chart Values
-    needs: [set-timestamp, docker_trivy]
+    needs: [set-timestamp, docker-trivy]
     runs-on: ubuntu-latest
     if: ${{ !contains(needs.*.result, 'failure') }}
 
@@ -67,7 +67,7 @@ jobs:
 
   notify:
     name: Slack Notification
-    needs: [test, analysis, dockertrivy, update-values]
+    needs: [test, analysis, docker-trivy, update-values]
     if: always()
     runs-on: ubuntu-latest
 
