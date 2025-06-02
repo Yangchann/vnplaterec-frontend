@@ -52,7 +52,7 @@ jobs:
         #   NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL || 'https://localhost:8081' }}
 
     - name: Run Trivy vulnerability scanner in image mode
-      uses: aquasecurity/trivy-action@v0.28.0
+      uses: aquasecurity/trivy-action@0.28.0
       with:
         image-ref: 'docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ inputs.TIMESTAMP }}'
         format: 'template'
