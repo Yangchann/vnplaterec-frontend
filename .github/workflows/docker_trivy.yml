@@ -5,13 +5,16 @@ on:
     inputs:
       TIMESTAMP:
         required: true
+        type: string
         description: 'Timestamp for the Docker image tag'
     secrets:
       DOCKER_TOKEN:
         required: true
+        type: string
         description: 'DockerHub token'
       DOCKERHUB_USERNAME:
         required: true
+        type: string
         description: 'DockerHub username'
 
 jobs:
