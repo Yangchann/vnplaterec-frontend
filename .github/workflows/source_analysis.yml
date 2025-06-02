@@ -5,7 +5,6 @@ on:
     secrets:
       SONAR_TOKEN:
         required: true
-        type: string
         description: 'SonarQube token for authentication'
 
 jobs:
