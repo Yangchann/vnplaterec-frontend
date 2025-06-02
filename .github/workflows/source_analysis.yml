@@ -1,0 +1,55 @@
+name: Source Analysis and Security Checks
+
+on:
+  workflow_call:
+    secrets:
+      SONAR_TOKEN:
+        required: true
+    SONAR_HOST_URL:
+        required: true
+
+jobs:
+  analysis:
+    runs-on: ubuntu-latest
+    name: Source Code Analysis and Security Checks
+    permissions:
+      security-events: write
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: SonarQubeScan
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+            args: >
+              -Dsonar.projectKey=Yangchann_vnplaterec-frontend
+              -Dsonar.organization=giangtran
+
+
+      - name: SonarQube Quality Gate check
+        id: sonarqube-quality-gate-check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        with:
+            pollingTimeoutSec: 600
+        env:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: "SonarQube Quality Gate Status"
+        run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
+
+      - name: Run Trivy vulnerability scanner in fs mode
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+            scan-type: 'fs'
+            scan-ref: '.'
+            format: 'table'
+            exit-code: '1'
+            ignore-unfixed: true
+            vuln-type: 'os,library'
+            severity: 'CRITICAL,HIGH'

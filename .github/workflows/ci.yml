@@ -4,93 +4,95 @@ on:
   push:
     branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 env:
   NODE_VERSION: '23'
 
 jobs:
-  simple-ci:
+  set-timestamp:
     runs-on: ubuntu-latest
-    name: Simple CI Test
+    outputs:
+      TIMESTAMP: ${{ steps.set_timestamp.outputs.TIMESTAMP }}
+    name: Set Timestamp
+    steps:
+      - id: set_timestamp
+        name: Set current timestamp
+        run: echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+
+  test:
+    uses: ./.github/workflows/test.yml
+    permissions:
+      security-events: write
+
+  analysis:
+    uses: ./.github/workflows/source_analysis.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+    permissions:
+      security-events: write
+
+  docker_trivy:
+    uses: ./.github/workflows/docker_trivy.yml
+    with:
+      TIMESTAMP: ${{ needs.set-timestamp.outputs.TIMESTAMP }}
+    secrets:
+      DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+    permissions:
+      security-events: write
+
+  update-values:
+    name: Update Helm Chart Values
+    need: [set-timestamp, docker_trivy]
+    runs-on: ubuntu-latest
+    if: ${{ !contains(needs.*.result, 'failure') }}
 
     steps:
-
-      - name: Checkout code
+      - name: Checkout Helm Chart repo
         uses: actions/checkout@v4
-
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
+          repository: cnmeow/vnplaterec-helmchart
+          token: ${{ secrets.CN_GITHUB_TOKEN }}
+          path: helm-chart
+      - name: Update values.yaml
         run: |
-          npm ci --prefer-offline --no-audit
+          cd helm-chart
+          git config user.name "Yangchann"
+          git config user.email "22520361@gm.uit.edu.vn"
+          git add .
+          git commit -m "ci: update image tag to ${{ needs.set-timestamp.outputs.TIMESTAMP }}"
+          git push
 
-      - name: Run tests
-        run: |
-          npm run test -- --passWithNoTests --watchAll=false || echo "No tests found, continuing..."
-
-      - name: Lint code
-        run: |
-          npm run lint || echo "No linting configured, continuing..."
-
-      - name: Build application
-        run: |
-          npm run build
-
-      - name: SonarQubeScan
-        uses: SonarSource/sonarqube-scan-action@v4
-        env:
-            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-            SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-            args: >
-              -Dsonar.projectKey=Yangchann_vnplaterec-frontend
-              -Dsonar.organization=giangtran
-
-
-      - name: SonarQube Quality Gate check
-        id: sonarqube-quality-gate-check
-        uses: sonarsource/sonarqube-quality-gate-action@master
-        with:
-            pollingTimeoutSec: 600
-        env:
-            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-            SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-      - name: "SonarQube Quality Gate Status"
-        run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
-
-      - name: Run Trivy vulnerability scanner in fs mode
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-            scan-type: 'fs'
-            scan-ref: '.'
-            format: 'table'
-            exit-code: '1'
-            ignore-unfixed: true
-            vuln-type: 'os,library'
-            severity: 'CRITICAL,HIGH'
-
-      - name: Build an image from Dockerfile
-        run: docker build -t giangttc/frontend:latest .
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: 'giangttc/frontend:latest'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-
-
-      - name: Notify Slack
-        if: always()
+    notify:
+      - name: Notify Slack if Failure
+        if: contains(needs.*.result, 'failure')
         uses: rtCamp/action-slack-notify@v2
         env:
+          SLACK_CHANNEL: general
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_COLOR: danger
+          SLACK_ICON: https://github.com/rtCamp.png?size=48
+          SLACK_USERNAME: vnplaterec-frontend
+          SLACK_TITLE: ❌ CI Pipeline Failed
+          SLACK_MESSAGE: |
+            🚨 *Workflow failed!*
+            • Repository: ${{ github.repository }}
+            • Branch: ${{ github.ref }}
+            • Commit: ${{ github.sha }}
+            • Triggered by: ${{ github.actor }}
+            • Job: ${{ github.job }}
+            • Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Notify Slack if Success
+        if: ${{ !contains(needs.*.result, 'failure') }}
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: general
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_COLOR: good
+          SLACK_ICON: https://github.com/rtCamp.png?size=48
+          SLACK_USERNAME: vnplaterec-frontend
+          SLACK_TITLE: ✅ CI Pipeline Success
+          SLACK_MESSAGE: "All jobs passed successfully!"
