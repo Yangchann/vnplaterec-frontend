@@ -42,7 +42,7 @@ jobs:
         context: .
         push: true
         tags: |
-          ${{ env.DOCKERHUB_USERNAME }}/${{ github.repository }}:{{ inputs.TIMESTAMP }}
+          ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.repository }}:{{ inputs.TIMESTAMP }}
 
         # cache-from: type=gha
         # cache-to: type=gha,mode=max
@@ -54,7 +54,7 @@ jobs:
       uses: aquasecurity/trivy-action@0.28.0
       with:
         scan-type: 'image'
-        image-ref: '${{ env.DOCKERHUB_USERNAME }}/${{ github.repository }}:{{ inputs.TIMESTAMP }}'
+        image-ref: '${{ secrets.DOCKERHUB_USERNAME }}/${{ github.repository }}:{{ inputs.TIMESTAMP }}'
         format: 'table'
         exit-code: '1'
         output: 'trivy-report.json'
