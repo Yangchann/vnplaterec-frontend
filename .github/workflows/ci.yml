@@ -29,7 +29,6 @@ jobs:
     uses: ./.github/workflows/source_analysis.yml
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
     permissions:
       security-events: write
 

@@ -5,8 +5,6 @@ on:
     secrets:
       SONAR_TOKEN:
         required: true
-    SONAR_HOST_URL:
-        required: true
 
 jobs:
   analysis:
@@ -24,7 +22,6 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v4
         env:
             SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-            SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
             args: >
               -Dsonar.projectKey=Yangchann_vnplaterec-frontend
@@ -38,7 +35,6 @@ jobs:
             pollingTimeoutSec: 600
         env:
             SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-            SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
       - name: "SonarQube Quality Gate Status"
         run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
