@@ -23,11 +23,12 @@ export const uploadImage = async (file: File, userId: string): Promise<PredictRe
     }
 
     return await response.json();
-  } catch (err: any) {
+  } catch (error) {
+    const err = error as Error;
     if (err.name === 'AbortError') {
-      throw new Error('Request timed out');
+      throw new Error('Upload timed out');
     }
-    throw err;
+    throw new Error(`Upload failed: ${err.message}`);
   } finally {
     clearTimeout(timeoutId); 
   }
