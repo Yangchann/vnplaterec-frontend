@@ -8,7 +8,7 @@ on:
         type: string
         description: 'Timestamp for the Docker image tag'
     secrets:
-      DOCKER_TOKEN:
+      DOCKERHUB_TOKEN:
         required: true
         description: 'DockerHub token'
       DOCKERHUB_USERNAME:
@@ -22,7 +22,6 @@ jobs:
     permissions:
       contents: read
       security-events: write
-      packages: write
 
     steps:
     - name: Login to DockerHub
@@ -43,7 +42,8 @@ jobs:
         context: .
         push: true
         tags: |
-          ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.repository }}:{{ inputs.TIMESTAMP }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ inputs.TIMESTAMP }}
+
 
         # cache-from: type=gha
         # cache-to: type=gha,mode=max
@@ -52,21 +52,15 @@ jobs:
         #   NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL || 'https://localhost:8081' }}
 
     - name: Run Trivy vulnerability scanner in image mode
-      uses: aquasecurity/trivy-action@0.28.0
+      uses: aquasecurity/trivy-action@v0.28.0
       with:
-        scan-type: 'image'
-        image-ref: '${{ secrets.DOCKERHUB_USERNAME }}/${{ github.repository }}:{{ inputs.TIMESTAMP }}'
-        format: 'table'
-        exit-code: '1'
-        output: 'trivy-report.json'
-        ignore-unfixed: true
-        vuln-type: 'os,library'
+        image-ref: 'docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ inputs.TIMESTAMP }}'
+        format: 'template'
+        template: '@/contrib/sarif.tpl'
+        output: 'trivy-results.sarif'
         severity: 'CRITICAL,HIGH'
 
     - name: Upload Trivy report to Github Security tab
       uses: github/codeql-action/upload-sarif@v3
       with:
-        sarif_file: trivy-report.json
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+        sarif_file: trivy-results.sarif

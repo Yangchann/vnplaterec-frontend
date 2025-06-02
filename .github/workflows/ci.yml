@@ -40,6 +40,7 @@ jobs:
       DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
     permissions:
+      contents: read
       security-events: write
 
   update-values:
