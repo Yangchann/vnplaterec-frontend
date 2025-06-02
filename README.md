@@ -6,7 +6,7 @@ It provides a clean, user-friendly interface for uploading images or accessing a
 👉 **Backend repository:** [github.com/cnmeow/vnplaterec-backend](https://github.com/cnmeow/vnplaterec-backend)
 
 ## 🔧 Technologies Used 
-
+ 
 - ⚛️ Next.js – React framework for building modern web applications
 - 🧠 TypeScript – Strongly typed language for safer code
 - 📷 Live camera access via browser APIs
