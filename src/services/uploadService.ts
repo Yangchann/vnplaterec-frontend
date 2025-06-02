@@ -8,12 +8,27 @@ export const uploadImage = async (file: File, userId: string): Promise<PredictRe
   formData.append('image', file);
   formData.append('id_user', userId);
 
-  const response = await fetch(`${BACKEND}/predict`, {
-    method: 'POST',
-    body: formData,
-  });
-  if (!response.ok) {
-    throw new Error('Upload failed');
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+  try {
+    const response = await fetch(`${BACKEND}/predict`, {
+      method: 'POST',
+      body: formData,
+      signal: controller.signal, 
+    });
+
+    if (!response.ok) {
+      throw new Error('Upload failed');
+    }
+
+    return await response.json();
+  } catch (err: any) {
+    if (err.name === 'AbortError') {
+      throw new Error('Request timed out');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId); 
   }
-  return await response.json(); 
 };
