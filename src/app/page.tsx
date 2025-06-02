@@ -8,6 +8,7 @@ import { uploadImage, PredictResponse } from '@/services/uploadService';
 import ResultDiv from '@/components/ResultDiv';
 
 export default function Home() {
+  const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL
   const { userUUID } = useUserUUID();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -65,7 +66,7 @@ export default function Home() {
     if (result) {
       const timestamp = new Date().getTime();
       const platetext = result?.plate_text ? result.plate_text : 'unknown';
-      setResultImg('http://10.100.247.158:2106/images/' + result?.result_path + '?t=' + timestamp);
+      setResultImg(BACKEND + '/images/' + result?.result_path + '?t=' + timestamp);
       setPlateText(platetext === "unknown" ? "Please try again" : platetext);
     }
   }, [result]);
