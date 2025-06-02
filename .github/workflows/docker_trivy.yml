@@ -10,7 +10,7 @@ on:
       DOCKER_TOKEN:
         required: true
         description: 'DockerHub token'
-    DOCKERHUB_USERNAME:
+      DOCKERHUB_USERNAME:
         required: true
         description: 'DockerHub username'
 
