@@ -1,17 +1,15 @@
 'use client'
 import React, { useRef, useState, useEffect } from 'react';
 import { Button, Splitter } from 'antd';
-import { uploadImage, PredictResponse } from '@/services/uploadService';
+import { uploadImage } from '@/services/uploadService';
 import { useUserUUID } from '@/context/UserUUIDContext';
 import ResultDiv from '@/components/ResultDiv';
 
 export default function Camera() {
-  const BACKEND = process.env.NEXT_PUBLIC_API_URL;
   const { userUUID } = useUserUUID();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<PredictResponse>();
   const [resultImg, setResultImg] = useState<string | null>(null);
   const [plateText, setPlateText] = useState<string | null>(null);
 
@@ -56,7 +54,8 @@ export default function Camera() {
       const file = new File([blob], 'image.png', { type: 'image/png' });
       try {
         const response = await uploadImage(file, userUUID);
-        setResult(response);
+        setResultImg(response?.result_path);
+        setPlateText(response?.plate_text || "unknown");
       } catch (err) {
         console.error(err);
       } finally {
@@ -64,15 +63,6 @@ export default function Camera() {
       }
     }, 'image/png');
   };
-
-  useEffect(() => {
-    if (result) {
-      const timestamp = new Date().getTime();
-      const platetext = result?.plate_text ? result?.plate_text : "unknown";
-      setResultImg(BACKEND + '/images/' + result?.result_path + '?t=' + timestamp);
-      setPlateText(platetext === "unknown" ? "Please try again" : platetext);
-    }
-  }, [result]);
 
   return (
     <div className='flex flex-col w-[100vw] items-center justify-center px-10'>

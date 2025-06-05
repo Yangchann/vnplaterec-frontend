@@ -21,7 +21,6 @@ export const uploadImage = async (file: File, userId: string): Promise<PredictRe
     if (!response.ok) {
       throw new Error('Upload failed');
     }
-
     return await response.json();
   } catch (error) {
     const err = error as Error;

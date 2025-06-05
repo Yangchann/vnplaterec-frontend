@@ -1,18 +1,16 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Upload, message, Splitter, Image } from 'antd';
 import type { UploadProps, UploadFile } from 'antd';
 import { PictureOutlined } from '@ant-design/icons';
 import { useUserUUID } from '@/context/UserUUIDContext';
-import { uploadImage, PredictResponse } from '@/services/uploadService';
+import { uploadImage } from '@/services/uploadService';
 import ResultDiv from '@/components/ResultDiv';
 
 export default function Home() {
-  const BACKEND = process.env.NEXT_PUBLIC_API_URL
   const { userUUID } = useUserUUID();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [result, setResult] = useState<PredictResponse>();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [resultImg, setResultImg] = useState<string | null>(null);
   const [plateText, setPlateText] = useState<string | null>(null);
@@ -50,26 +48,17 @@ export default function Home() {
       return;
     }
     setUploading(true);
-    setResult(undefined);
 
     try {
       const response = await uploadImage(fileList[0].originFileObj as File, userUUID);
-      setResult(response);
+      setResultImg(response?.result_path);
+      setPlateText(response?.plate_text || "unknown");
     } catch (error) {
       console.error(error);
     } finally {
       setUploading(false);
     }
   };
-
-  useEffect(() => {
-    if (result) {
-      const timestamp = new Date().getTime();
-      const platetext = result?.plate_text ? result.plate_text : 'unknown';
-      setResultImg(BACKEND + '/images/' + result?.result_path + '?t=' + timestamp);
-      setPlateText(platetext === "unknown" ? "Please try again" : platetext);
-    }
-  }, [result]);
 
   return (
     <div className='flex flex-col w-[100vw] items-center justify-center px-10'>
